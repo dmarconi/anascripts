@@ -57,6 +57,7 @@ setenv_str += "export ANASCRIPTS=" + os.path.split(os.path.abspath(sys.argv[0]))
 setenv_str += "export MYPROJECT=" + myproject + "\n" 
 setenv_str += "export MYPROJECTDIR=" + myprojectdir + "\n"
 setenv_str += "export ENVSCRIPT=" + myprojectdir + "/setenv.sh\n"
+setenv_str += "export PATH=$PATH:$ANASCRIPTS:$MYPROJECTDIR/scripts\n"
 
 # create the README file
 readme_str = """
