@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import sys,os
+import subprocess
 
 # 1 command line argument:
 # the path to the project directory to be created
@@ -35,17 +36,30 @@ if not "CMSSW_BASE" in os.environ or not "SCRAM_ARCH" in os.environ:
 CMSSW_BASE = os.environ["CMSSW_BASE"]
 SCRAM_ARCH = os.environ["SCRAM_ARCH"]
 
+# what is ini?
+ini = ""
+if os.environ["HOST"].find("naf") == 0:
+    ini = ("ini ()\n" + 
+           "{\n" + 
+           "   eval \"`/afs/desy.de/common/etc/local/ini/ini.pl -b $*`\"\n" + 
+           "}\n")
+else:
+    ini = ("ini () {\n" + 
+           "   eval \"`/usr/share/NAF_profiles/ini.pl -b $*`\"\n" +
+           "}\n") 
+           
 # create the setenv file
 setenv_str  = "#!/bin/bash\n"
 setenv_str += "\n"
+setenv_str += ini
 setenv_str += "# environment for dcach access\n"
-setenv_str += "eval `/usr/share/NAF_profiles/ini.pl glite`\n"
-setenv_str += "eval `/usr/share/NAF_profiles/ini.pl dctools`\n"
+setenv_str += "ini glite\n"
+setenv_str += "ini dctools\n"
 setenv_str += "export X509_USER_PROXY=$HOME/k5-ca-proxy.pem\n"
 setenv_str += "export SEHOME=/pnfs/desy.de/cms/tier2/store/user/$USER/ # handy, but not required by anything\n"
 setenv_str += "\n"
 setenv_str += "# CMSSW environment\n"
-setenv_str += "eval `/usr/share/NAF_profiles/ini.pl cmssw`\n"
+setenv_str += "ini cmssw\n"
 setenv_str += "export SCRAM_ARCH=" + SCRAM_ARCH + "\n"
 setenv_str += "pwd=$PWD\n"
 setenv_str += "cd " + CMSSW_BASE + "/src\n"
