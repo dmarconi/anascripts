@@ -38,7 +38,13 @@ SCRAM_ARCH = os.environ["SCRAM_ARCH"]
 
 # what is ini?
 ini = ""
-if os.environ["HOST"].find("naf") == 0:
+host = None
+if "HOST" in os.environ:
+    host = os.environ["HOST"]
+else:
+    host = os.environ["HOSTNAME"]
+
+if host.find("naf") == 0:
     ini = ("ini ()\n" + 
            "{\n" + 
            "   eval \"`/afs/desy.de/common/etc/local/ini/ini.pl -b $*`\"\n" + 
