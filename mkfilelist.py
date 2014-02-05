@@ -45,6 +45,9 @@ for idir in idirs:
         # skipp empty lines
         if len(line) == 0:
             continue
+        # skipp lines that don't end with .root
+        if line.find(".root") != len(line)-5:
+            continue
         # create the list entry
         prefix = "file:"
         if listcommand == "dcls":
