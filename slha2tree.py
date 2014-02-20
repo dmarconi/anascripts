@@ -1,16 +1,71 @@
 import glob
-import mypyslha
-import sys
+import mypyslha     # own basic version of mypyslha: much faster
+import sys,os
 import tempfile
-import ROOT as rt
+from slurpTable import slurpTable   # own module to read in simple tables in txt format
+
+
+# usage
+usage = """
+#######################
+#   slha2tree
+#######################
+
+a script to ntuplize sets of slha files
+
+usage:
+
+"""
+usage += "   python {0} SLHADIR OFILE [options]\n".format(sys.argv[0])
+usage += """
+   SLHADIR: directory with slha files to be ntuplized
+   OFILE:   output file containing ntuplized slha files in root TTree format
+
+options:
+
+   --storeId FILE1,FILE2,... : store per slha file an id number, specified in txt format in FILE1,FILE2,...
+   --storeId 'FILE*'         : store per slha file an id number, specified in txt format in FILE1,File2,...
+                               where FILE1,FILE2, ... have the following sturcure:
+--------
+id\tfile
+1\t/path/to/slhaFile1
+2\t/path/to/slhaFile2
+5\t/path/to/slhaFile5
+...
+--------
+                               slha files for wich no id is available get default id -9999
+"""
+
 # parse command line
+from optparse import OptionParser
+parser = OptionParser(usage=usage)
+parser.add_option("--storeId",type="string",help="store slha id numbers as stored in FILE1,FILE2,FILE3,... (wildcard allowd if parentheses are used)",metavar="FILE")
+parser.add_option("--nentries",type="int",help="use N first slha files only",metavar="N")
+(options, args) = parser.parse_args()
+if not len(args) >= 2:
+    print "ERROR, expecting at least 2 arguments, use --help option for more info"
+    sys.exit()
 slhadir = sys.argv[1]
 ofile = sys.argv[2]
 
-# list slha files
-slhafiles = sorted(glob.glob(slhadir + "/*.slha"))
+# load root in batch mode
+sys.argv.append("-b")
+import ROOT as rt
 
-# read first to extract structure
+# list slha files
+slhafiles = sorted(glob.glob(slhadir + "/*"))
+if options.nentries and options.nentries < len(slhafiles):
+    slhafiles = slhafiles[0:options.nentries]
+
+# read in ids
+idfiles = []
+if options.storeId:
+    _idfiles = options.storeId.split(",")
+    for f in range(0,len(_idfiles)):
+        idfiles.extend(glob.glob(_idfiles[f]))
+slhaIdDict = slurpTable(",".join(idfiles),dictMode=True,keyColumns="file")
+
+# read first slha file to extract structure
 blocks,decays = mypyslha.parseSLHAFile(slhafiles[0])
 
 ###################
@@ -19,6 +74,7 @@ blocks,decays = mypyslha.parseSLHAFile(slhafiles[0])
 print "creating c++ struct to interface the tree..."
 struct_str = "struct MyData {\n"
 # path to slha file
+struct_str +="   int ID;\n"
 struct_str +="   char slhapath[256];\n" 
 # block information
 for blockname in sorted(blocks.keys()):
@@ -69,9 +125,10 @@ myData = rt.MyData();
 ####################
 print "creating python function to fill the c++ struct.."
 func_str = ""
-func_str += "def updateMyData(myData,slhafile):\n"
+func_str += "def updateMyData(myData,slhafile,slhaId):\n"
 func_str += "   blocks,decays = mypyslha.parseSLHAFile(slhafile)\n"
 func_str += "   myData.slhapath = slhafile\n"
+func_str += "   myData.ID = slhaId\n"
 # block information
 for blockname in sorted(blocks.keys()):
     block = blocks[blockname]
@@ -132,6 +189,7 @@ tf = rt.TFile.Open(ofile,"RECREATE")
 tt = rt.TTree("slha","slha")
 # add pointName
 tt.Branch("slhapath",rt.AddressOf(myData,"slhapath"),"slhapath/C")
+tt.Branch("ID",rt.AddressOf(myData,"ID"),"ID/I")
 # add the blocks
 for blockname in sorted(blocks.keys()):
     block = blocks[blockname]
@@ -174,11 +232,14 @@ print "filling the tree..."
 nfiles = len(slhafiles)
 for e in range(0,nfiles):
     slhafile = slhafiles[e]
+    id = -9999
+    if os.path.abspath(slhafile) in slhaIdDict:
+        id = int(slhaIdDict[os.path.abspath(slhafile)]["id"])
     #print slhafile
     if e%100 == 0:
         print "processing entry",e,"of",nfiles
     # fill c++ struct
-    updateMyData(myData,slhafile)
+    updateMyData(myData,slhafile,id)
     # fill tree
     tt.Fill()
 

@@ -3,7 +3,7 @@
 import sys,glob,os
 
 # slurp a table from txt file
-def slurpTable(filenames,keyColumns=None,splitCharacter=" ",dictMode=False):
+def slurpTable(filenames,keyColumns=None,splitCharacter=None,dictMode=False):
     filenames = filenames.split(",")
     # expand regular expressions
     _filenames = []
@@ -37,7 +37,8 @@ def slurpTable(filenames,keyColumns=None,splitCharacter=" ",dictMode=False):
             if not keyColumns is None:
                 for col in keyColumns:
                     if not col in colNames:
-                        print "ERROR: given keyColumn '{0}' does not exist in file {2}".format(col,filename)
+                        print "ERROR: given keyColumn '{0}' is no column name in file '{1}'".format(col,filename)
+                        print "       available columnn names: {0}".format(",".join(colNames))
                         sys.exit()
                     else:
                         keyColumnIndices.append(colNames.index(col))
