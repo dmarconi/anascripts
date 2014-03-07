@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python
 
 usage = """
@@ -158,6 +159,13 @@ for analyzer in analyzers:
     for filelist in filelists:
         os.makedirs("results/" + analyzer + "/" + filelist)
 
+
+##########################
+# create local copy of executable
+##########################
+for analyzer in analyzers:
+    os.system("cp " + options.anadir + "/" + analyzer + " " + analyzer) 
+
 ##########################
 # create parameter.txt
 ##########################
@@ -201,7 +209,7 @@ MYPROJECTDIR = os.environ['MYPROJECTDIR']
 INPUT = sys.argv[1]
 print 'input:',INPUT
 """)
-SCRIPT.write("ANADIR=\"" + options.anadir + "\"\n")
+SCRIPT.write("WORKDIR=\"" + os.environ["PWD"] + "\"\n")
 SCRIPT.write("ANALYZERS=[\"" + "\",\"".join(analyzers) + "\"]\n")
 SCRIPT.write("ODIR=\"" + os.environ["PWD"] + "/results\"\n")
 
@@ -293,7 +301,7 @@ for analyzer in ANALYZERS:
     os.makedirs(output)
     for filelist in filelists:
         output = 'results/' + analyzer + '/' + INPUT_name + '/' + os.path.split(filelist)[1].replace('.txt','')
-        command = ANADIR + '/' + analyzer + ' ' + filelist + ' ' + output
+        command = WORKDIR + '/' + analyzer + ' ' + filelist + ' ' + output
         print command
         os.system(command)
         ofiles = glob.glob(output + '*')
