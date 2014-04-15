@@ -83,9 +83,9 @@ def mymakedir(dir):
 # create parameter.txt
 ##########################
 pFILE = open("parameters.txt","w")
-pFILE.write("IFILES,")
+pFILE.write("\"IFILES\"")
 if options.conservefilename:
-    pFILE.write("OUTPUT_FILENAME")
+    pFILE.write(",\"OUTPUT_FILENAME\"")
 pFILE.write("\n")
     
 iFILE = open(MYPROJECTDIR + "/data/filelists/" + filelist + ".txt")
@@ -97,9 +97,9 @@ start = 0
 stop = options.merge
 while start < len(files):
     stop = min(stop,len(files))
-    pFILE.write("'" + "';'".join(files[start:stop]) + "',")
+    pFILE.write("\"" + "';'".join(files[start:stop]) + "\"")
     if options.conservefilename:
-        pFILE.write(os.path.split(files[start])[1])
+        pFILE.write(",\"" + os.path.split(files[start])[1] + "\"")
     pFILE.write("\n")
     start = start + options.merge
     stop = stop + options.merge
@@ -130,7 +130,7 @@ analyzer = os.path.split(analyzer)[1]
 ##########################
 CFG = open("job.cfg","w")
 CFGcontent = ("""[global]
-module     = FileParaMod
+module     = CMSSW
 backend    = local
     
 [jobs]
@@ -140,10 +140,10 @@ in flight  = 500
 wall time  = __WTIMEDUMMY__
 max retry  = 0
 
-[ParaMod]
-module = CMSSW
-parameter source = parameters.txt
-parameter source dialect = excel
+[parameters]
+parameters = <mylist>
+mylist type = cvs
+mylist source = parameters.txt
 
 [CMSSW]
 project area = __PROJECT_AREA_DUMMY__

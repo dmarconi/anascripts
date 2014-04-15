@@ -170,7 +170,7 @@ for analyzer in analyzers:
 # create parameter.txt
 ##########################
 pFILE = open("parameters.txt","w")
-pFILE.write("INPUT,\n")
+pFILE.write("\"INPUT\"\n")
 for filelist in filelists:    
     iFILE = open(MYPROJECTDIR + "/data/filelists/" + filelist + ".txt")
     files = iFILE.readlines()
@@ -179,7 +179,7 @@ for filelist in filelists:
     stop = options.merge
     while start < len(files):
         stop = min(stop,len(files))
-        pFILE.write(filelist + "[" + str(start) + ":" + str(stop) + "],\n")
+        pFILE.write("\"" + filelist + "[" + str(start) + ":" + str(stop) + "]\"\n")
         start = start + options.merge
         stop = stop + options.merge
 pFILE.close()
@@ -319,7 +319,7 @@ SCRIPT.close()
 ##########################
 CFG = open("job.cfg","w")
 CFGcontent = ("""[global]
-module     = FileParaMod
+module     = UserMod
 backend    = local
     
 [jobs]
@@ -329,10 +329,10 @@ in flight  = 500
 wall time  = __WTIMEDUMMY__
 max retry  = 0
 
-[ParaMod]
-module = UserMod
-parameter source = parameters.txt
-parameter source dialect = excel
+[parameters]
+parameters = <mylist>
+mylist type = csv
+mylist source = parameters.txt
 
 [UserMod]
 executable  = run_script.sh
