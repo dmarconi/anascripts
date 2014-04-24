@@ -73,7 +73,7 @@ ENVSCRIPT = os.environ['ENVSCRIPT']
 
 # bookkeep the options
 FILE = open("runanalyzer_batch_command.txt","w")
-FILE.write("python ".join(sys.argv))
+FILE.write("python " + " ".join(sys.argv))
 FILE.close()
 
 # parse options
