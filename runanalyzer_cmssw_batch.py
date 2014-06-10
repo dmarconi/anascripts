@@ -142,7 +142,7 @@ max retry  = 0
 
 [parameters]
 parameters = <mylist>
-mylist type = cvs
+mylist type = csv
 mylist source = parameters.txt
 
 [CMSSW]
