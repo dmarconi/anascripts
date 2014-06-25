@@ -26,6 +26,7 @@ options:
    --storeId FILE1,FILE2,... : store per slha file an id number, specified in txt format in FILE1,FILE2,...
    --storeId 'FILE*'         : store per slha file an id number, specified in txt format in FILE1,File2,...
                                where FILE1,FILE2, ... have the following sturcure:
+   --nentries=N only store info for first N slha files in tree
 --------
 id\tfile
 1\t/path/to/slhaFile1
@@ -59,14 +60,18 @@ if options.nentries and options.nentries < len(slhafiles):
 
 # read in ids
 idfiles = []
+slhaIdDict = None
 if options.storeId:
     _idfiles = options.storeId.split(",")
     for f in range(0,len(_idfiles)):
         idfiles.extend(glob.glob(_idfiles[f]))
-slhaIdDict = slurpTable(",".join(idfiles),dictMode=True,keyColumns="file")
+    slhaIdDict = slurpTable(",".join(idfiles),dictMode=True,keyColumns="file")
+
 
 # read first slha file to extract structure
 blocks,decays = mypyslha.parseSLHAFile(slhafiles[0])
+print blocks,decays
+print slhafiles[0]
 
 ###################
 # create c++ struct to interface the tree
@@ -233,7 +238,7 @@ nfiles = len(slhafiles)
 for e in range(0,nfiles):
     slhafile = slhafiles[e]
     id = -9999
-    if os.path.abspath(slhafile) in slhaIdDict:
+    if slhaIdDict != None and os.path.abspath(slhafile) in slhaIdDict:
         id = int(slhaIdDict[os.path.abspath(slhafile)]["id"])
     #print slhafile
     if e%100 == 0:

@@ -65,7 +65,7 @@ def parseSLHALine(line):
 
 # read the slha file and put the content in dictionaries
 def parseSLHAFile(path):
-    
+
     FILE = open(path)
     lines = FILE.read().split("\n")
     FILE.close()
