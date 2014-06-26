@@ -90,6 +90,8 @@ void TernaryPlot::Fill(double v1,double v2,double v3,double w){
   // in upward or downward pointing triangle?
   double xlimit = binwidth_*row/2 + binwidth_*(1+col) - (y-binwidth_*sin60*row)/sin60*cos60;
   col *= 2;
+  row = min(bincontent_.size()-1,row);
+  col = min(bincontent_[row].size()-1,col);
   if(x > xlimit)
     col+=1;
   // add weight
